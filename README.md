@@ -30,17 +30,17 @@
 1. **사전 준비**: 브라우저에 **Tampermonkey** 확장 프로그램이 설치되어 있어야 합니다.
    - [Chrome용 설치](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) / [Edge용 설치](https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpcndfhdbmhlgdicjfibjmocne)
 2. **스크립트 설치**: 아래 링크를 클릭하여 설치 화면으로 이동한 뒤 **'설치(Install)'** 버튼을 누르세요.
-   - [👉 스크립트 설치하기 (Direct Install)](https://raw.githubusercontent.com/mabinewb/dc-id-search-script/main/dc_search.user.js)
+   - [👉 스크립트 설치하기 (GitHub Direct)](https://raw.githubusercontent.com/mabinewb/dc-id-search-script/main/dc_search.user.js)
 
 ---
 
 ## 🛠 업데이트 및 지원
 
-이 스크립트는 GitHub를 통해 **자동 업데이트**를 지원합니다.
+이 스크립트는 GitHub를 통해 **자동 업데이트**를 지원합니다. 별도의 사이트 방문 없이도 새로운 기능이 추가되거나 오류가 수정되면 브라우저에서 자동으로 업데이트 알림이 갑니다.
 
 * **제작자**: [uid1000](https://github.com/mabinewb)
-* **홈페이지**: [GitHub Repository](https://github.com/mabinewb/dc-id-search-script)
-* **공식 배포처**: [Greasy Fork](https://greasyfork.org/ko/scripts/568355)
+* **저장소**: [GitHub Repository](https://github.com/mabinewb/dc-id-search-script)
+* **버그 제보**: [GitHub Issues](https://github.com/mabinewb/dc-id-search-script/issues)
 
 ---
 © 2026 uid1000. MIT License.
