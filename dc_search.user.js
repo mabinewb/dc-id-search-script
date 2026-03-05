@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         디시인사이드 식별코드 & IP 검색기 (Deep Scan)
 // @namespace    https://github.com/mabinewb/dc-id-search-script
-// @version      2.8
+// @version      2.9
 // @description  닉네임 클릭 메뉴와 검색창에 식별코드(UID) 및 IP 검색 옵션을 추가하고, 30페이지씩 연속 스캔합니다. (결과 메시지 버그 수정)
 // @author       uid1000
 // @homepage     https://github.com/mabinewb/dc-id-search-script
