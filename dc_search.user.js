@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         디시인사이드 식별코드 & IP 검색기 (Deep Scan)
 // @namespace    https://github.com/mabinewb/dc-id-search-script
-// @version      2.9
-// @description  닉네임 클릭 메뉴와 검색창에 식별코드(UID) 및 IP 검색 옵션을 추가하고, 30페이지씩 연속 스캔합니다. (결과 메시지 버그 수정)
+// @version      3.0
+// @description  닉네임 클릭 메뉴와 검색창에 식별코드(UID) 및 IP 검색 옵션을 추가하고, 30페이지씩 연속 스캔합니다. (디시 구조 변경 패치 대응)
 // @author       uid1000
 // @homepage     https://github.com/mabinewb/dc-id-search-script
 // @supportURL   https://github.com/mabinewb/dc-id-search-script/issues
@@ -30,9 +30,12 @@
         if (isScanning) return;
         const urlParams = new URLSearchParams(window.location.search);
         const queryFromUrl = urlParams.get('uid_search');
-        if (queryFromUrl && window.location.pathname.includes('/lists')) {
+        const isListPage = window.location.pathname.includes('/board/lists');
+        
+        if (queryFromUrl && isListPage) {
             executeInstantSearch(queryFromUrl);
         }
+        
         injectSearchType();
         injectUserMenu();
     }
@@ -53,20 +56,27 @@
         typeLayer.appendChild(idLi);
     }
 
+    // [패치] 바뀐 유저 팝업 레이어 구조에 맞게 셀렉터 수정
     function injectUserMenu() {
-        const userLayers = document.querySelectorAll('#user_data_lyr');
+        // 기존 '#user_data_lyr' 대신 '.user_data' 클래스로 탐색
+        const userLayers = document.querySelectorAll('.user_data');
         userLayers.forEach(layer => {
-            if (layer.style.display !== 'none' && !layer.querySelector('.custom-id-search')) {
+            const menuList = layer.querySelector('.user_data_list');
+            
+            if (menuList && layer.style.display !== 'none' && !layer.querySelector('.custom-id-search')) {
                 const parentTd = layer.closest('.ub-writer') || layer.closest('.writer_mainbox');
                 const uid = parentTd ? parentTd.getAttribute('data-uid') : '';
                 const ip = parentTd ? parentTd.getAttribute('data-ip') : '';
                 const targetValue = uid || ip;
-                const menuList = layer.querySelector('.user_data_list');
-                if (targetValue && menuList) {
+                
+                if (targetValue) {
                     const searchLi = document.createElement('li');
                     searchLi.className = 'bg_grey custom-id-search';
                     searchLi.innerHTML = `<a href="javascript:;" style="color:#292e59; font-weight:bold;">${uid ? '식별코드' : 'IP'} 검색<em class="sp_img icon_go"></em></a>`;
-                    searchLi.onclick = (e) => { e.preventDefault(); handleSearchRedirection(targetValue); };
+                    searchLi.onclick = (e) => { 
+                        e.preventDefault(); 
+                        handleSearchRedirection(targetValue); 
+                    };
                     menuList.appendChild(searchLi);
                 }
             }
@@ -74,11 +84,11 @@
     }
 
     function handleSearchRedirection(val) {
-        if (window.location.pathname.includes('/lists')) {
+        if (window.location.pathname.includes('/board/lists')) {
             executeInstantSearch(val);
         } else {
             const gallId = new URLSearchParams(window.location.search).get('id');
-            const listUrl = window.location.origin + window.location.pathname.replace('/view/', '/lists/');
+            const listUrl = window.location.origin + window.location.pathname.replace('/view', '/lists');
             window.location.href = `${listUrl}?id=${gallId}&uid_search=${encodeURIComponent(val)}`;
         }
     }
@@ -109,7 +119,7 @@
         }
 
         const gallId = new URLSearchParams(window.location.search).get('id');
-        const baseUrl = window.location.origin + window.location.pathname.replace('/view/', '/lists/');
+        const baseUrl = window.location.origin + window.location.pathname.replace('/view', '/lists');
         let foundRows = [];
         const endPage = currentScanPage + SCAN_STEP;
 
@@ -131,13 +141,11 @@
                 currentScanPage++;
             }
 
-            // 기존 안내 메시지(스캔 중, 결과 없음 등)를 삭제
             const oldMsgs = listTable.querySelectorAll('.scan-msg');
             oldMsgs.forEach(m => m.remove());
 
             if (isNewSearch) listTable.innerHTML = '';
             removeNextButton();
-
             foundRows.forEach(row => listTable.appendChild(row));
 
             if (foundRows.length === 0 && listTable.querySelectorAll('tr.ub-content').length === 0) {
