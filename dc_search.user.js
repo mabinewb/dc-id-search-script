@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         디시인사이드 식별코드 & IP 검색기 (Deep Scan)
 // @namespace    https://github.com/mabinewb/dc-id-search-script
-// @version      3.0
-// @description  닉네임 클릭 메뉴와 검색창에 식별코드(UID) 및 IP 검색 옵션을 추가하고, 30페이지씩 연속 스캔합니다. (디시 구조 변경 패치 대응)
+// @version      3.1
+// @description  닉네임 클릭 메뉴와 검색창에 식별코드(UID) 및 IP 검색 옵션을 추가하고, 30페이지씩 연속 스캔합니다. (URL 최적화 및 히스토리 지원)
 // @author       uid1000
 // @homepage     https://github.com/mabinewb/dc-id-search-script
 // @supportURL   https://github.com/mabinewb/dc-id-search-script/issues
@@ -33,7 +33,7 @@
         const isListPage = window.location.pathname.includes('/board/lists');
         
         if (queryFromUrl && isListPage) {
-            executeInstantSearch(queryFromUrl);
+            executeInstantSearch(queryFromUrl, true);
         }
         
         injectSearchType();
@@ -56,13 +56,10 @@
         typeLayer.appendChild(idLi);
     }
 
-    // [패치] 바뀐 유저 팝업 레이어 구조에 맞게 셀렉터 수정
     function injectUserMenu() {
-        // 기존 '#user_data_lyr' 대신 '.user_data' 클래스로 탐색
         const userLayers = document.querySelectorAll('.user_data');
         userLayers.forEach(layer => {
             const menuList = layer.querySelector('.user_data_list');
-            
             if (menuList && layer.style.display !== 'none' && !layer.querySelector('.custom-id-search')) {
                 const parentTd = layer.closest('.ub-writer') || layer.closest('.writer_mainbox');
                 const uid = parentTd ? parentTd.getAttribute('data-uid') : '';
@@ -85,7 +82,7 @@
 
     function handleSearchRedirection(val) {
         if (window.location.pathname.includes('/board/lists')) {
-            executeInstantSearch(val);
+            executeInstantSearch(val, false);
         } else {
             const gallId = new URLSearchParams(window.location.search).get('id');
             const listUrl = window.location.origin + window.location.pathname.replace('/view', '/lists');
@@ -93,16 +90,26 @@
         }
     }
 
-    function executeInstantSearch(val) {
+    function executeInstantSearch(val, isHistoryLoad = false) {
         if (isScanning) return;
         const searchInput = document.querySelector('input[name="search_keyword"]');
         const typeTxt = document.querySelector('#search_type_txt');
+        
         if (searchInput && typeTxt) {
             searchInput.value = val;
             typeTxt.innerText = '식별코드/IP';
             typeTxt.setAttribute('data-opt', 'user_id_filter');
-            const newUrl = window.location.pathname + window.location.search.replace(/&uid_search=[^&]*/, '');
-            window.history.replaceState({}, '', newUrl);
+            
+            if (!isHistoryLoad) {
+                // [패치] 불필요한 URL 변수들(page, s_type, s_keyword 등)을 싹 날리고 id와 uid_search만 남깁니다.
+                const gallId = new URLSearchParams(window.location.search).get('id');
+                const cleanUrl = new URL(window.location.origin + window.location.pathname);
+                if (gallId) cleanUrl.searchParams.set('id', gallId);
+                cleanUrl.searchParams.set('uid_search', val);
+                
+                window.history.pushState({ uid: val }, '', cleanUrl.toString());
+            }
+
             currentScanPage = 1;
             startDeepSearch(val, true);
         }
@@ -186,6 +193,17 @@
         }
         return window.originalSearch ? window.originalSearch(p) : null;
     };
+
+    window.addEventListener('popstate', (event) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryFromUrl = urlParams.get('uid_search');
+        
+        if (queryFromUrl) {
+            executeInstantSearch(queryFromUrl, true);
+        } else {
+            window.location.reload();
+        }
+    });
 
     const observer = new MutationObserver((mutations) => {
         for (let mutation of mutations) {
